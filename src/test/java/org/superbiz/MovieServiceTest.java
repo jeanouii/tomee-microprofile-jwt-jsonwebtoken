@@ -50,58 +50,45 @@ public class MovieServiceTest {
     public void testAsManager() throws Exception {
         final WebClient webClient = createWebClient(base);
 
-        final Movie movie = new Movie(1, "The Matrix", "Lana Wachowski");
-
         final String claims = "{" +
                 "  \"sub\":\"Jane Awesome\"," +
+                "  \"email\":\"jane@awesome.com\"," +
                 "  \"iss\":\"https://server.example.com\"," +
                 "  \"groups\":[\"manager\",\"user\"]," +
                 "  \"exp\":2552047942" +
                 "}";
 
-        final Response response = webClient.reset()
-                .path("/api/movies")
+        final String notificationAddress = webClient.reset()
+                .path("/api/movies/notifications")
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + Tokens.asToken(claims))
-                .post(movie);
-        assertEquals(204, response.getStatus());
+                .get().readEntity(String.class);
+
+        assertEquals("jane@awesome.com", notificationAddress);
 
     }
 
-    /**
-     * User does not have sufficient permission to addMovie
-     */
+
     @Test
     public void testAsUser() throws Exception {
         final WebClient webClient = createWebClient(base);
 
-        final Movie movie = new Movie(2, "Reservoir Dogs", "Quentin Tarantino");
-
         final String claims = "{" +
                 "  \"sub\":\"Joe Cool\"," +
+                "  \"email\":\"joe@cool.com\"," +
                 "  \"iss\":\"https://server.example.com\"," +
                 "  \"groups\":[\"user\"]," +
                 "  \"exp\":2552047942" +
                 "}";
 
-        final Response response = webClient.reset()
-                .path("/api/movies")
+        final String notificationAddress = webClient.reset()
+                .path("/api/movies/notifications")
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + Tokens.asToken(claims))
-                .post(movie);
-        assertEquals(403, response.getStatus());
-    }
+                .get().readEntity(String.class);
 
-    @Test
-    public void testAsAnonymous() throws Exception {
-        final WebClient webClient = createWebClient(base);
+        assertEquals("joe@cool.com", notificationAddress);
 
-        // Should return a 401 since the POST request lacks the Authorization header
-        final Response response = webClient.reset()
-                .path("/api/movies")
-                .header("Content-Type", "application/json")
-                .post(new Movie());
-        assertEquals(401, response.getStatus());
     }
 
     private static WebClient createWebClient(final URL base) {

@@ -16,8 +16,11 @@
  */
 package org.superbiz;
 
+import org.eclipse.microprofile.jwt.Claim;
+
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -36,6 +39,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MovieService {
 
     private Map<Integer, Movie> store = new ConcurrentHashMap<>();
+
+    @Inject
+    @Claim("email")
+    private String email;
+
+    @GET
+    @Path("notifications")
+    @RolesAllowed({"manager", "user"})
+    public String getNotificationsAddress() {
+        return email;
+    }
 
     @GET
     @RolesAllowed({"manager", "user"})
