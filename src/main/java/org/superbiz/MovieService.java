@@ -16,7 +16,7 @@
  */
 package org.superbiz;
 
-import org.eclipse.microprofile.jwt.Claim;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
@@ -41,14 +41,13 @@ public class MovieService {
     private Map<Integer, Movie> store = new ConcurrentHashMap<>();
 
     @Inject
-    @Claim("email")
-    private String email;
+    private JsonWebToken callerPrincipal;
 
     @GET
     @Path("notifications")
     @RolesAllowed({"manager", "user"})
     public String getNotificationsAddress() {
-        return email;
+        return callerPrincipal.getClaim("email");
     }
 
     @GET
